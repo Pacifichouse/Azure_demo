@@ -59,4 +59,3 @@ jobs:
           app-name: 'hrmspacific'
           slot-name: 'production'
           package: '*.jar'
-          
