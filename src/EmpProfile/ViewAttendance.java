@@ -1,13 +1,24 @@
 package EmpProfile;
 
 
-import javax.swing.*;
-import java.awt.*;
-import java.sql.*;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Vector;
 
-import net.proteanit.sql.DbUtils;
-import java.awt.event.*;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
+
 import com.toedter.calendar.JDateChooser;
 
 public class ViewAttendance extends JFrame implements ActionListener {
@@ -70,7 +81,7 @@ public class ViewAttendance extends JFrame implements ActionListener {
                 pstmt.setString(1, loggedInUsername); // Setting the username parameter
             }
             ResultSet rs = pstmt.executeQuery();
-            table.setModel(DbUtils.resultSetToTableModel(rs));
+            table.setModel(DbUtilsHelper.resultSetToTableModel(rs));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -125,6 +136,31 @@ public class ViewAttendance extends JFrame implements ActionListener {
         }
     }
 
+    public class DbUtilsHelper {
+    public static DefaultTableModel resultSetToTableModel(ResultSet rs) throws SQLException {
+        ResultSetMetaData metaData = rs.getMetaData();
+
+        // Get column names
+        int columnCount = metaData.getColumnCount();
+        Vector<String> columnNames = new Vector<>();
+        for (int column = 1; column <= columnCount; column++) {
+            columnNames.add(metaData.getColumnName(column));
+        }
+
+        // Get data rows
+        Vector<Vector<Object>> data = new Vector<>();
+        while (rs.next()) {
+            Vector<Object> row = new Vector<>();
+            for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
+                row.add(rs.getObject(columnIndex));
+            }
+            data.add(row);
+        }
+
+        return new DefaultTableModel(data, columnNames);
+    }
+}
+
     public void actionPerformed(ActionEvent ae) {
         if (ae.getSource() == back) {
             setVisible(false);
@@ -154,7 +190,7 @@ public class ViewAttendance extends JFrame implements ActionListener {
                     pstmt.setString(3, toDate);
                 }
                 ResultSet rs = pstmt.executeQuery();
-                table.setModel(DbUtils.resultSetToTableModel(rs));
+                table.setModel(DbUtilsHelper.resultSetToTableModel(rs));
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -174,128 +210,6 @@ public class ViewAttendance extends JFrame implements ActionListener {
         new ViewAttendance(username);
     }
 }
-
-
-
-
-
-//package EmpProfile;
-//
-//import javax.swing.*;
-//import java.awt.*;
-//import java.sql.*;
-//import net.proteanit.sql.DbUtils;
-//import java.awt.event.*;
-//
-//public class ViewAttendance extends JFrame implements ActionListener {
-//
-//    JTable table;
-//    Choice cemployeeId;
-//    JButton back, search; // Added search button
-//    String username;
-//
-//    ViewAttendance(String username) {
-//        this.username = username;
-//
-//        getContentPane().setBackground(Color.WHITE);
-//        setLayout(null);
-//
-//        JLabel searchlbl = new JLabel("Search by Employee Id");
-//        searchlbl.setBounds(20, 20, 150, 20);
-//        add(searchlbl);
-//
-//        cemployeeId = new Choice();
-//        cemployeeId.setBounds(180, 20, 150, 20);
-//        add(cemployeeId);
-//
-//        // Show search button and search by ID option only for pacifichouse user
-//        if (username.equals("pacifichouse")) {
-//            search = new JButton("Search");
-//            search.setBounds(120, 70, 80, 20);
-//            search.addActionListener(this);
-//            add(search);
-//        }
-//
-//        try {
-//            Conn c = new Conn();
-//            ResultSet rs = c.s.executeQuery("select * from employee");
-//            while (rs.next()) {
-//                cemployeeId.add(rs.getString("empId"));
-//            }
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        table = new JTable();
-//
-//        // Constructing query with parameterized username
-//        String query = (username.equals("pacifichouse")) ?
-//                "SELECT * FROM Attendance" :
-//                "SELECT * FROM Attendance WHERE username IN (SELECT username FROM login WHERE username = ?)";
-//
-//        try {
-//            Conn c = new Conn();
-//            PreparedStatement pstmt = c.prepareStatement(query);
-//            if (!username.equals("pacifichouse")) {
-//                pstmt.setString(1, username); // Setting the username parameter
-//            }
-//            ResultSet rs = pstmt.executeQuery();
-//            table.setModel(DbUtils.resultSetToTableModel(rs));
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//        }
-//
-//        JScrollPane jsp = new JScrollPane(table);
-//        jsp.setBounds(0, 100, 900, 600);
-//        add(jsp);
-//
-//        back = new JButton("Back");
-//        back.setBounds(220, 70, 80, 20);
-//        back.addActionListener(this);
-//        add(back);
-//
-//        setSize(900, 700);
-//        setLocation(200, 20);
-//        setVisible(true);
-//    }
-//
-//    public void actionPerformed(ActionEvent ae) {
-//        if (ae.getSource() == back) {
-//            setVisible(false);
-//            new Home(username);
-//        } else if (ae.getSource() == search) {
-//            String selectedEmpId = cemployeeId.getSelectedItem();
-//            if (selectedEmpId != null && !selectedEmpId.isEmpty()) {
-//                try {
-//                    Conn c = new Conn();
-//                    String query = "SELECT * FROM Attendance WHERE employee_id = ?";
-//                    PreparedStatement pstmt = c.prepareStatement(query);
-//                    pstmt.setString(1, selectedEmpId);
-//                    ResultSet rs = pstmt.executeQuery();
-//                    table.setModel(DbUtils.resultSetToTableModel(rs));
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            } else {
-//                JOptionPane.showMessageDialog(this, "Please select an employee ID.", "No Employee ID Selected", JOptionPane.WARNING_MESSAGE);
-//            }
-//        }
-//    }
-//
-//    public static void main(String[] args) {
-//        String username = "default"; // or get username from user input
-//        new ViewAttendance(username);
-//    }
-//}
-
-
-
-
-
-
-
-
-
 
 
 
