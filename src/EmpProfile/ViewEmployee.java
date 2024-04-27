@@ -1,12 +1,27 @@
 package EmpProfile;
 
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.awt.Choice;
+import java.awt.Color;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 
-import net.proteanit.sql.DbUtils;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 
-import java.awt.*;
-import java.sql.*;
-import java.awt.event.*;
+import EmpProfile.ViewAttendance.DbUtilsHelper;
 
 public class ViewEmployee extends JFrame implements ActionListener {
 
@@ -91,7 +106,7 @@ public class ViewEmployee extends JFrame implements ActionListener {
         try {
             Conn c = new Conn();
             ResultSet rs = c.s.executeQuery("select * from employee");
-            table = new JTable(DbUtils.resultSetToTableModel(rs));
+            table = new JTable(DbUtilsHelper.resultSetToTableModel(rs));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -168,7 +183,7 @@ public class ViewEmployee extends JFrame implements ActionListener {
             try {
                 Conn c = new Conn();
                 ResultSet rs = c.s.executeQuery(query);
-                table.setModel(DbUtils.resultSetToTableModel(rs));
+                table.setModel(DbUtilsHelper.resultSetToTableModel(rs));
             } catch (Exception e) {
                 e.printStackTrace();
             }
